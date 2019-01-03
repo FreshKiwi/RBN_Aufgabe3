@@ -31,103 +31,59 @@ int main(int argc, char *argv[])
                    break;
                }
            }
-    pathIndex = optind;
+    if (!(optind >= argc))
+		pathIndex = optind;
 	
+	#ifdef DEBUG
     printf("Pfad: %s\n", argv[pathIndex]);
-    if (pathIndex)
-    {
-		
-		#ifdef DEBUG
-        
-        if (aFlag)
-        {
-            printf("mit -a\n");
-        }
-        if (lFlag)
-        {
-            printf("mit -l\n");
-        }
-        #endif
-        
-        
-        dp = opendir(argv[pathIndex]);
-        
-        if (dp != NULL)
-        {
-            while (ep = readdir(dp))
-            {
-                lstat(ep->d_name, &fileInfo);
-                
-                if(lFlag){
-					if(aFlag){
-						printf("%lo\t ",(unsigned long)fileInfo.st_mode);
-					}
-					else{
-						if(strncmp(ep->d_name,".", 1)==0)
-							printf("%lo\t ",(unsigned long)fileInfo.st_mode);
-					}    
-				}
-				
-                if(aFlag)
-                {
-                    if(strncmp(ep->d_name,".", 1)==0)
-						printf("%s\t\n",ep->d_name);
-                }
-                if(strncmp(ep->d_name,".", 1)!=0)
-                {-a
-					printf("%s\t\n",ep->d_name);
-				}
-                
-                
-			}
-			(void)closedir(dp);
-		}
-        else
-        {
-            perror("Couldn't open the directory.");
-        }
-	}
-    else 
-    {
-        dp = opendir("./");
-       
-        if (dp != NULL)
-        {
-            while (ep = readdir(dp))
-            {
-                lstat(ep->d_name, &fileInfo);
-                
-                if(lFlag){
-					if(aFlag){
-						printf("%lo\t ",(unsigned long)fileInfo.st_mode);
-					}
-					else{
-						if(strncmp(ep->d_name,".", 1)==0)
-							printf("%lo\t ",(unsigned long)fileInfo.st_mode);
-					}    
-				}
-				
-                if(aFlag)
-                {
-                    if(strncmp(ep->d_name,".", 1)==0)
-						printf("%s\t\n",ep->d_name);
-                }
-                if(strncmp(ep->d_name,".", 1)!=0)
-                {
-					printf("%s\t\n",ep->d_name);
-				}
-                
-                
-			}
-			(void)closedir(dp);
-		}
-        else
-            perror("Couldn't open the directory");
-    }
+    #endif
     
-    if (argc > 5)
-    {
-        printf("Too many arguments supplied.\n");
-    }
+    if (pathIndex)
+		dp = opendir(argv[pathIndex]);
+	else 
+		dp = opendir("./");
+		
+	#ifdef DEBUG  
+    if (aFlag)
+            printf("mit -a\n");
+    if (lFlag)
+            printf("mit -l\n");
+    #endif
+        
+        
+	if (dp != NULL)
+	{
+		while (ep = readdir(dp))
+		{
+			lstat(ep->d_name, &fileInfo);
+			
+			if(lFlag){
+				if(aFlag){
+					printf("%lo\t ",(unsigned long)fileInfo.st_mode);
+				}
+				else{
+					if(strncmp(ep->d_name,".", 1)!=0)
+						printf("%lo\t ",(unsigned long)fileInfo.st_mode);
+				}    
+			}
+			
+			if(aFlag)
+			{
+				if(strncmp(ep->d_name,".", 1)==0)
+					printf("%s\t\n",ep->d_name);
+			}
+			if(strncmp(ep->d_name,".", 1)!=0)
+			{
+				printf("%s\t\n",ep->d_name);
+			}
+			
+			
+		}
+		(void)closedir(dp);
+	}
+	else
+	{
+		perror("Couldn't open the directory.");
+	}
 }
 
