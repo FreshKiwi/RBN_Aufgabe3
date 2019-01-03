@@ -5,8 +5,11 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <string.h>
+#include <pwd.h>
+#include <grp.h>
+#include <time.h>
 
-#define DEBUG
+#define NDEBUG
 
 int main(int argc, char *argv[])
 {
@@ -19,6 +22,9 @@ int main(int argc, char *argv[])
     DIR *dp;
     struct dirent *ep;
     struct stat fileInfo;
+    struct passwd *pw;
+    struct group *gp;
+    char date[256];
 
 
 	while ((opt = getopt(argc, argv, "al")) != -1) {
@@ -31,19 +37,17 @@ int main(int argc, char *argv[])
                    break;
                }
            }
-    if (!(optind >= argc))
+    
+    if (optind < argc)
 		pathIndex = optind;
 	
-	#ifdef DEBUG
-    printf("Pfad: %s\n", argv[pathIndex]);
-    #endif
-    
-    if (pathIndex)
+	if (pathIndex)
 		dp = opendir(argv[pathIndex]);
 	else 
 		dp = opendir("./");
 		
-	#ifdef DEBUG  
+	#ifdef DEBUG
+    printf("Pfad: %s\n", argv[pathIndex]);
     if (aFlag)
             printf("mit -a\n");
     if (lFlag)
@@ -53,17 +57,58 @@ int main(int argc, char *argv[])
         
 	if (dp != NULL)
 	{
+		
 		while (ep = readdir(dp))
 		{
 			lstat(ep->d_name, &fileInfo);
+			pw = getpwuid(fileInfo.st_uid);
+			gp = getgrgid(fileInfo.st_gid);
 			
 			if(lFlag){
 				if(aFlag){
-					printf("%lo\t ",(unsigned long)fileInfo.st_mode);
+					printf( (S_ISDIR(fileInfo.st_mode)) ? "d" : "-");
+				    printf( (fileInfo.st_mode & S_IRUSR) ? "r" : "-");
+				    printf( (fileInfo.st_mode & S_IWUSR) ? "w" : "-");
+				    printf( (fileInfo.st_mode & S_IXUSR) ? "x" : "-");
+				    printf( (fileInfo.st_mode & S_IRGRP) ? "r" : "-");
+				    printf( (fileInfo.st_mode & S_IWGRP) ? "w" : "-");
+				    printf( (fileInfo.st_mode & S_IXGRP) ? "x" : "-");
+				    printf( (fileInfo.st_mode & S_IROTH) ? "r" : "-");
+				    printf( (fileInfo.st_mode & S_IWOTH) ? "w" : "-");
+				    printf( (fileInfo.st_mode & S_IXOTH) ? "x\t" : "-\t");
+				    printf( "%lu\t",fileInfo.st_nlink);
+				    printf( "%s\t", pw->pw_name );
+				    printf( "%s\t", gp->gr_name );
+				    printf( "%lu\t",fileInfo.st_size);
+				    
+					strcpy(date,ctime(&fileInfo.st_mtime));
+					date[strlen(date)-1] = '\0';
+				    printf( "%s\t", date);
+				    
 				}
 				else{
 					if(strncmp(ep->d_name,".", 1)!=0)
-						printf("%lo\t ",(unsigned long)fileInfo.st_mode);
+					{
+						printf( (S_ISDIR(fileInfo.st_mode)) ? "d" : "-");
+					    printf( (fileInfo.st_mode & S_IRUSR) ? "r" : "-");
+					    printf( (fileInfo.st_mode & S_IWUSR) ? "w" : "-");
+					    printf( (fileInfo.st_mode & S_IXUSR) ? "x" : "-");
+					    printf( (fileInfo.st_mode & S_IRGRP) ? "r" : "-");
+					    printf( (fileInfo.st_mode & S_IWGRP) ? "w" : "-");
+					    printf( (fileInfo.st_mode & S_IXGRP) ? "x" : "-");
+					    printf( (fileInfo.st_mode & S_IROTH) ? "r" : "-");
+					    printf( (fileInfo.st_mode & S_IWOTH) ? "w" : "-");
+					    printf( (fileInfo.st_mode & S_IXOTH) ? "x\t" : "-\t");
+					    printf( "%lu\t",fileInfo.st_nlink);
+					    printf( "%s\t", pw->pw_name );
+					    printf( "%s\t", gp->gr_name );
+					    printf( "%lu\t",fileInfo.st_size);
+					    
+					    strcpy(date,ctime(&fileInfo.st_mtime));
+						date[strlen(date)-1] = '\0';
+					    printf( "%s\t", date);
+					    
+					}
 				}    
 			}
 			
